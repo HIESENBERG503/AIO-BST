@@ -13,6 +13,7 @@ import { ToolsPanel } from "@/components/ToolsPanel";
 import { FileExplorer } from "@/components/FileExplorer";
 import { TerminalOutput } from "@/components/TerminalOutput";
 import { DisclaimerModal } from "@/components/DisclaimerModal";
+import { QuickActions } from "@/components/QuickActions";
 
 const BACKEND_URL = process.env.REACT_APP_BACKEND_URL;
 const API = `${BACKEND_URL}/api`;
@@ -28,6 +29,7 @@ function Dashboard() {
   const [sidebarOpen, setSidebarOpen] = useState(false);
   const [files, setFiles] = useState([]);
   const [currentPath, setCurrentPath] = useState("/");
+  const [currentTarget, setCurrentTarget] = useState("");
   const [disclaimerAccepted, setDisclaimerAccepted] = useState(() => {
     return localStorage.getItem("nexus_disclaimer_accepted") === "true";
   });
