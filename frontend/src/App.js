@@ -317,6 +317,14 @@ function Dashboard() {
           currentSession={currentSession}
         />
 
+        {/* Quick Actions Bar */}
+        <div className="px-4 md:px-6 pt-4">
+          <QuickActions 
+            onExecuteWorkflow={executeWorkflow}
+            onSetTarget={setCurrentTarget}
+          />
+        </div>
+
         <div className="bento-grid">
           {/* Chat Panel */}
           <div className="chat-panel" data-testid="chat-panel">
@@ -333,6 +341,7 @@ function Dashboard() {
               tools={tools}
               categories={toolCategories}
               onExecuteTool={executeTool}
+              currentTarget={currentTarget}
             />
           </div>
 
