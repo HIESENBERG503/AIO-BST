@@ -127,12 +127,15 @@ export const ToolsPanel = ({ tools, categories, onExecuteTool }) => {
                     >
                       <div className="tool-grid border-t border-white/5">
                         {categoryTools.map((tool) => (
-                          <motion.button
+                          <motion.div
                             key={tool.id}
                             whileHover={{ scale: 1.02 }}
                             whileTap={{ scale: 0.98 }}
-                            onClick={() => handleToolClick(tool)}
-                            className="tool-card p-3 bg-black/30 border border-white/5 text-left"
+                            onClick={(e) => {
+                              e.stopPropagation();
+                              handleToolClick(tool);
+                            }}
+                            className="tool-card p-3 bg-black/30 border border-white/5 text-left cursor-pointer"
                             data-testid={`tool-${tool.id}`}
                           >
                             <div className="flex items-center justify-between mb-2">
@@ -150,7 +153,7 @@ export const ToolsPanel = ({ tools, categories, onExecuteTool }) => {
                             <p className="text-[10px] text-[#666666] line-clamp-2">
                               {tool.description}
                             </p>
-                          </motion.button>
+                          </motion.div>
                         ))}
                       </div>
                     </motion.div>
