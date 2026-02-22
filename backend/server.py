@@ -211,32 +211,62 @@ SCAN_WORKFLOWS = {
     "quick_recon": {
         "name": "Quick Reconnaissance",
         "description": "Fast initial target assessment",
-        "tools": ["whois", "nmap", "theHarvester"],
+        "tools": ["whois", "subfinder", "nmap", "theHarvester"],
         "estimated_time": "5-10 minutes"
     },
     "web_app_audit": {
         "name": "Web Application Audit",
         "description": "Comprehensive web app security scan",
-        "tools": ["nmap", "nikto", "dirb", "sqlmap", "wpscan"],
+        "tools": ["whatweb", "nmap", "nikto", "dirb", "gobuster", "sqlmap", "xsstrike"],
         "estimated_time": "30-60 minutes"
     },
     "network_sweep": {
         "name": "Network Sweep",
         "description": "Full network enumeration and vulnerability scan",
-        "tools": ["nmap", "masscan", "arp-scan", "netcat"],
+        "tools": ["arp-scan", "nmap", "masscan", "responder", "crackmapexec"],
         "estimated_time": "15-30 minutes"
     },
     "credential_audit": {
         "name": "Credential Audit",
         "description": "Password and authentication testing",
-        "tools": ["hydra", "john", "hashcat", "medusa"],
+        "tools": ["hydra", "john", "hashcat", "mimikatz", "lazagne"],
         "estimated_time": "Variable"
     },
     "full_pentest": {
         "name": "Full Penetration Test",
         "description": "Complete security assessment workflow",
-        "tools": ["whois", "theHarvester", "nmap", "nikto", "dirb", "sqlmap", "hydra", "metasploit"],
+        "tools": ["whois", "theHarvester", "subfinder", "nmap", "nikto", "dirb", "sqlmap", "hydra", "metasploit"],
         "estimated_time": "2-4 hours"
+    },
+    "ad_attack": {
+        "name": "Active Directory Attack",
+        "description": "AD enumeration and attack chain",
+        "tools": ["nmap", "crackmapexec", "bloodhound", "rubeus", "mimikatz", "impacket"],
+        "estimated_time": "1-2 hours"
+    },
+    "exfil_setup": {
+        "name": "Exfiltration Setup",
+        "description": "Data exfiltration channel establishment",
+        "tools": ["dnscat2", "chisel", "proxychains", "socat", "cloakify"],
+        "estimated_time": "30-45 minutes"
+    },
+    "privesc_linux": {
+        "name": "Linux Privilege Escalation",
+        "description": "Linux privesc enumeration and exploitation",
+        "tools": ["linpeas", "pspy", "searchsploit", "metasploit"],
+        "estimated_time": "30-60 minutes"
+    },
+    "privesc_windows": {
+        "name": "Windows Privilege Escalation",
+        "description": "Windows privesc enumeration and exploitation",
+        "tools": ["winpeas", "seatbelt", "powersploit", "mimikatz", "rubeus"],
+        "estimated_time": "30-60 minutes"
+    },
+    "lateral_movement": {
+        "name": "Lateral Movement",
+        "description": "Move through network after initial access",
+        "tools": ["crackmapexec", "evil-winrm", "impacket", "sshuttle", "ligolo"],
+        "estimated_time": "1-2 hours"
     }
 }
 
