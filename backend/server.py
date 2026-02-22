@@ -763,6 +763,152 @@ async def get_tool_executions(session_id: str):
     ).sort("timestamp", -1).to_list(50)
     return {"executions": executions}
 
+# Workflow endpoints
+@api_router.get("/workflows")
+async def get_workflows():
+    """Get available scan workflows"""
+    return {"workflows": SCAN_WORKFLOWS}
+
+class WorkflowExecutionRequest(BaseModel):
+    workflow_id: str
+    target: str
+    session_id: str
+
+@api_router.post("/workflows/execute")
+async def execute_workflow(request: WorkflowExecutionRequest):
+    """Execute a complete scan workflow"""
+    workflow = SCAN_WORKFLOWS.get(request.workflow_id)
+    if not workflow:
+        raise HTTPException(status_code=404, detail="Workflow not found")
+    
+    results = []
+    for tool_name in workflow["tools"]:
+        result = simulate_tool_execution(tool_name, {"target": request.target})
+        results.append({
+            "tool": tool_name,
+            "status": result["status"],
+            "output": result["output"][:500] + "..." if len(result["output"]) > 500 else result["output"]
+        })
+        
+        # Log each execution
+        execution_log = {
+            "id": str(uuid.uuid4()),
+            "session_id": request.session_id,
+            "workflow_id": request.workflow_id,
+            "tool_name": tool_name,
+            "parameters": {"target": request.target},
+            "timestamp": datetime.now(timezone.utc).isoformat(),
+            "status": result["status"]
+        }
+        await db.tool_executions.insert_one(execution_log)
+    
+    return {
+        "workflow": workflow["name"],
+        "target": request.target,
+        "tools_executed": len(results),
+        "results": results
+    }
+
+# Vulnerability database (simulated)
+VULNERABILITY_DB = [
+    {"id": "CVE-2024-0001", "severity": "CRITICAL", "service": "apache", "description": "Remote code execution in Apache 2.4.x", "exploit": "metasploit/exploit/multi/http/apache_rce"},
+    {"id": "CVE-2024-0002", "severity": "HIGH", "service": "mysql", "description": "SQL injection in MySQL 8.0", "exploit": "sqlmap"},
+    {"id": "CVE-2024-0003", "severity": "HIGH", "service": "ssh", "description": "Authentication bypass in OpenSSH", "exploit": "hydra"},
+    {"id": "CVE-2024-0004", "severity": "MEDIUM", "service": "http", "description": "XSS vulnerability in web applications", "exploit": "manual"},
+    {"id": "CVE-2024-0005", "severity": "MEDIUM", "service": "ftp", "description": "Anonymous FTP access enabled", "exploit": "netcat"},
+    {"id": "CVE-2024-0006", "severity": "LOW", "service": "http", "description": "Missing security headers", "exploit": "nikto"},
+    {"id": "CVE-2023-44487", "severity": "HIGH", "service": "http", "description": "HTTP/2 Rapid Reset Attack", "exploit": "custom"},
+    {"id": "CVE-2023-4863", "severity": "CRITICAL", "service": "chrome", "description": "WebP heap buffer overflow", "exploit": "metasploit"},
+]
+
+@api_router.get("/vulnerabilities/search")
+async def search_vulnerabilities(service: str = None, severity: str = None):
+    """Search vulnerability database"""
+    results = VULNERABILITY_DB
+    if service:
+        results = [v for v in results if service.lower() in v["service"].lower()]
+    if severity:
+        results = [v for v in results if v["severity"].upper() == severity.upper()]
+    return {"vulnerabilities": results, "count": len(results)}
+
+@api_router.post("/vulnerabilities/correlate")
+async def correlate_vulnerabilities(services: List[str]):
+    """Correlate discovered services with known vulnerabilities"""
+    correlations = []
+    for service in services:
+        matches = [v for v in VULNERABILITY_DB if service.lower() in v["service"].lower()]
+        if matches:
+            correlations.append({
+                "service": service,
+                "vulnerabilities": matches,
+                "risk_level": max(m["severity"] for m in matches) if matches else "NONE"
+            })
+    return {"correlations": correlations}
+
+# Export endpoints
+class ExportRequest(BaseModel):
+    session_id: str
+    format: str = "txt"  # txt, json, html
+
+@api_router.post("/export/report")
+async def export_report(request: ExportRequest):
+    """Export session results as a report"""
+    # Get all executions for session
+    executions = await db.tool_executions.find(
+        {"session_id": request.session_id}, 
+        {"_id": 0}
+    ).sort("timestamp", 1).to_list(100)
+    
+    # Get chat messages
+    messages = await db.chat_messages.find(
+        {"session_id": request.session_id}, 
+        {"_id": 0}
+    ).sort("timestamp", 1).to_list(100)
+    
+    if request.format == "json":
+        return {
+            "report": {
+                "session_id": request.session_id,
+                "generated_at": datetime.now(timezone.utc).isoformat(),
+                "tool_executions": executions,
+                "chat_history": messages
+            }
+        }
+    else:
+        # Generate text report
+        report_lines = [
+            "=" * 60,
+            "NEXUS PENETRATION TEST REPORT",
+            "=" * 60,
+            f"Session ID: {request.session_id}",
+            f"Generated: {datetime.now(timezone.utc).isoformat()}",
+            "",
+            "-" * 60,
+            "TOOL EXECUTIONS",
+            "-" * 60,
+        ]
+        
+        for exe in executions:
+            report_lines.append(f"\n[{exe.get('timestamp', 'N/A')}] {exe.get('tool_name', 'Unknown')}")
+            report_lines.append(f"Status: {exe.get('status', 'N/A')}")
+            if exe.get('parameters'):
+                report_lines.append(f"Parameters: {exe.get('parameters')}")
+        
+        report_lines.extend([
+            "",
+            "-" * 60,
+            "FINDINGS SUMMARY",
+            "-" * 60,
+            f"Total tools executed: {len(executions)}",
+            "See individual tool outputs for detailed findings.",
+            "",
+            "=" * 60,
+            "END OF REPORT",
+            "=" * 60,
+        ])
+        
+        return {"report": "\n".join(report_lines)}
+
 # File operations endpoints
 @api_router.post("/files/operation")
 async def file_operation(operation: FileOperation):
@@ -788,12 +934,15 @@ async def init_sandbox():
     (sandbox_dir / "results").mkdir(exist_ok=True)
     (sandbox_dir / "scripts").mkdir(exist_ok=True)
     (sandbox_dir / "wordlists").mkdir(exist_ok=True)
+    (sandbox_dir / "exploits").mkdir(exist_ok=True)
     
     # Sample files
     (sandbox_dir / "scans" / "nmap_results.txt").write_text("# Nmap scan results\n# Run scans to populate")
-    (sandbox_dir / "scripts" / "recon.sh").write_text("#!/bin/bash\n# Reconnaissance script\necho 'Starting recon...'")
-    (sandbox_dir / "wordlists" / "common.txt").write_text("admin\npassword\n123456\nroot\ntest")
-    (sandbox_dir / "README.txt").write_text("NEXUS Pentest Sandbox\n===================\nStore your scan results and scripts here.")
+    (sandbox_dir / "scripts" / "recon.sh").write_text("#!/bin/bash\n# Reconnaissance script\necho 'Starting recon...'\nwhois $1\nnmap -sV $1")
+    (sandbox_dir / "scripts" / "web_audit.sh").write_text("#!/bin/bash\n# Web audit script\nnikto -h $1\ndirb http://$1")
+    (sandbox_dir / "wordlists" / "common.txt").write_text("admin\npassword\n123456\nroot\ntest\nuser\nguest\ndefault")
+    (sandbox_dir / "wordlists" / "passwords.txt").write_text("password\n123456\nadmin123\nletmein\nwelcome\npassword1")
+    (sandbox_dir / "README.txt").write_text("NEXUS Pentest Sandbox\n===================\nStore your scan results and scripts here.\n\nDirectories:\n- scans/: Store scan outputs\n- results/: Analysis results\n- scripts/: Custom scripts\n- wordlists/: Password lists\n- exploits/: Exploit code")
     
     return {"status": "success", "message": "Sandbox initialized"}
 
