@@ -134,7 +134,55 @@ KALI_TOOLS = {
         {"id": "maltego", "name": "Maltego", "description": "OSINT and forensics", "category": "recon"},
         {"id": "recon-ng", "name": "Recon-ng", "description": "Web reconnaissance framework", "category": "recon"},
         {"id": "shodan", "name": "Shodan", "description": "Internet-connected device search", "category": "recon"},
+        {"id": "dnsrecon", "name": "DNSrecon", "description": "DNS enumeration and zone transfer", "category": "recon"},
+        {"id": "subfinder", "name": "Subfinder", "description": "Subdomain discovery tool", "category": "recon"},
     ],
+    "forensics": [
+        {"id": "volatility", "name": "Volatility", "description": "Memory forensics framework", "category": "forensics"},
+        {"id": "autopsy", "name": "Autopsy", "description": "Digital forensics platform", "category": "forensics"},
+        {"id": "binwalk", "name": "Binwalk", "description": "Firmware analysis tool", "category": "forensics"},
+        {"id": "foremost", "name": "Foremost", "description": "File carving tool", "category": "forensics"},
+        {"id": "exiftool", "name": "ExifTool", "description": "Metadata extraction", "category": "forensics"},
+    ],
+    "social": [
+        {"id": "setoolkit", "name": "SET", "description": "Social Engineering Toolkit", "category": "social"},
+        {"id": "gophish", "name": "GoPhish", "description": "Phishing framework", "category": "social"},
+        {"id": "king-phisher", "name": "King Phisher", "description": "Phishing campaign toolkit", "category": "social"},
+    ],
+}
+
+# Pre-defined scan workflows
+SCAN_WORKFLOWS = {
+    "quick_recon": {
+        "name": "Quick Reconnaissance",
+        "description": "Fast initial target assessment",
+        "tools": ["whois", "nmap", "theHarvester"],
+        "estimated_time": "5-10 minutes"
+    },
+    "web_app_audit": {
+        "name": "Web Application Audit",
+        "description": "Comprehensive web app security scan",
+        "tools": ["nmap", "nikto", "dirb", "sqlmap", "wpscan"],
+        "estimated_time": "30-60 minutes"
+    },
+    "network_sweep": {
+        "name": "Network Sweep",
+        "description": "Full network enumeration and vulnerability scan",
+        "tools": ["nmap", "masscan", "arp-scan", "netcat"],
+        "estimated_time": "15-30 minutes"
+    },
+    "credential_audit": {
+        "name": "Credential Audit",
+        "description": "Password and authentication testing",
+        "tools": ["hydra", "john", "hashcat", "medusa"],
+        "estimated_time": "Variable"
+    },
+    "full_pentest": {
+        "name": "Full Penetration Test",
+        "description": "Complete security assessment workflow",
+        "tools": ["whois", "theHarvester", "nmap", "nikto", "dirb", "sqlmap", "hydra", "metasploit"],
+        "estimated_time": "2-4 hours"
+    }
 }
 
 # ============ MCP TOOL FUNCTIONS ============
