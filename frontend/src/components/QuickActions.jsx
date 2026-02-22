@@ -155,9 +155,9 @@ export const QuickActions = ({ onExecuteWorkflow, onSetTarget }) => {
         </Button>
       </div>
 
-      {/* Quick Workflow Buttons */}
+      {/* Quick Workflow Buttons - 2 rows */}
       <div className="grid grid-cols-5 gap-2">
-        {Object.entries(WORKFLOWS).map(([id, workflow]) => {
+        {Object.entries(WORKFLOWS).slice(0, 5).map(([id, workflow]) => {
           const Icon = workflow.icon;
           return (
             <motion.button
@@ -166,16 +166,42 @@ export const QuickActions = ({ onExecuteWorkflow, onSetTarget }) => {
               whileTap={{ scale: 0.98 }}
               onClick={() => handleQuickScan(id)}
               disabled={!target}
-              className="p-3 bg-black/50 border border-white/5 hover:border-white/20 disabled:opacity-30 disabled:cursor-not-allowed transition-colors group"
+              className="p-2 bg-black/50 border border-white/5 hover:border-white/20 disabled:opacity-30 disabled:cursor-not-allowed transition-colors group"
               data-testid={`workflow-${id}`}
             >
               <div 
-                className="w-8 h-8 mx-auto mb-2 flex items-center justify-center rounded"
+                className="w-6 h-6 mx-auto mb-1 flex items-center justify-center rounded"
                 style={{ backgroundColor: `${workflow.color}15`, border: `1px solid ${workflow.color}40` }}
               >
-                <Icon className="w-4 h-4" style={{ color: workflow.color }} />
+                <Icon className="w-3 h-3" style={{ color: workflow.color }} />
               </div>
-              <span className="block font-mono text-[10px] text-white/70 group-hover:text-white truncate">
+              <span className="block font-mono text-[9px] text-white/70 group-hover:text-white truncate">
+                {workflow.name}
+              </span>
+            </motion.button>
+          );
+        })}
+      </div>
+      <div className="grid grid-cols-5 gap-2 mt-2">
+        {Object.entries(WORKFLOWS).slice(5, 10).map(([id, workflow]) => {
+          const Icon = workflow.icon;
+          return (
+            <motion.button
+              key={id}
+              whileHover={{ scale: 1.02 }}
+              whileTap={{ scale: 0.98 }}
+              onClick={() => handleQuickScan(id)}
+              disabled={!target}
+              className="p-2 bg-black/50 border border-white/5 hover:border-white/20 disabled:opacity-30 disabled:cursor-not-allowed transition-colors group"
+              data-testid={`workflow-${id}`}
+            >
+              <div 
+                className="w-6 h-6 mx-auto mb-1 flex items-center justify-center rounded"
+                style={{ backgroundColor: `${workflow.color}15`, border: `1px solid ${workflow.color}40` }}
+              >
+                <Icon className="w-3 h-3" style={{ color: workflow.color }} />
+              </div>
+              <span className="block font-mono text-[9px] text-white/70 group-hover:text-white truncate">
                 {workflow.name}
               </span>
             </motion.button>
