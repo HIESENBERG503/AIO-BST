@@ -238,6 +238,16 @@ function Dashboard() {
     setSidebarOpen(false);
   };
 
+  // Show disclaimer if not accepted
+  if (!disclaimerAccepted) {
+    return (
+      <>
+        <DisclaimerModal onAccept={handleDisclaimerAccept} />
+        <Toaster position="bottom-right" theme="dark" />
+      </>
+    );
+  }
+
   return (
     <div className="app-container" data-testid="app-container">
       {/* Mobile Overlay */}
